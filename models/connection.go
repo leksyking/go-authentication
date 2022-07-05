@@ -29,7 +29,7 @@ func connectDB() *mongo.Client {
 
 var Client *mongo.Client = connectDB()
 
-func UserConnection(client *mongo.Client, collectionName string) *mongo.Collection {
-	var collection *mongo.Collection = client.Database("goauthDB").Collection(collectionName)
+func UserConnection(client *mongo.Client) *mongo.Collection {
+	var collection *mongo.Collection = client.Database("goauthDB").Collection("User")
 	return collection
 }
