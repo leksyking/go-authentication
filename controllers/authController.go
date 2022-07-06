@@ -18,7 +18,13 @@ func verifyPassword() {
 }
 
 func Register(c *gin.Context) {
-
+	//check if email exists already
+	//validate struct
+	//hash password
+	//save user
+	//create token(with id, and username)
+	//attach cookies to user(use jwt to use the tokem to be stored in cookies)
+	//send verification token to user's email
 }
 func Login(c *gin.Context) {
 
