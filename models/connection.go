@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/mongocrypt/options"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func connectDB() *mongo.Client {
@@ -29,7 +29,7 @@ func connectDB() *mongo.Client {
 
 var Client *mongo.Client = connectDB()
 
-func UserConnection(client *mongo.Client) *mongo.Collection {
+func UserCollection(client *mongo.Client) *mongo.Collection {
 	var collection *mongo.Collection = client.Database("goauthDB").Collection("User")
 	return collection
 }
