@@ -7,11 +7,15 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func connectDB() *mongo.Client {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading environment variables")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	MongoDB := os.Getenv("MONGODB")

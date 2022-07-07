@@ -12,7 +12,7 @@ import (
 
 func main() {
 	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("Error loading environment variables")
+		log.Fatal("error loading environment variables")
 	}
 	server := gin.New()
 	server.Use(gin.Logger(), gin.Recovery())
