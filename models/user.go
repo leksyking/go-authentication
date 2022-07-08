@@ -10,7 +10,3 @@ type User struct {
 	UserName  *string            `json:"username" validate:"required"`
 	Password  *string            `json:"password" validate:"required"`
 }
-
-type Email struct {
-	Email *string `json:"email"`
-}

@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -20,8 +22,12 @@ var (
 	UserCollection *mongo.Collection = models.UserCollection(Client)
 )
 
-func hashPassword() {
-	//bcrypt.GenerateFromPassword()
+func hashPassword(userPassword string) string {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(userPassword), 14)
+	if err != nil {
+		log.Panic(err)
+	}
+	return string(bytes)
 }
 func verifyPassword() {
 	//bcrypt.CompareHashAndPassword()
@@ -45,19 +51,14 @@ func Register(c *gin.Context) {
 		return
 	}
 	//check if email exists already
-	var emailExists models.Email
-	err = UserCollection.FindOne(ctx, bson.M{"email": User.Email}).Decode(&emailExists)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		fmt.Println(err)
-		return
-	}
-	if emailExists.Email != nil {
+	exists, err := UserCollection.CountDocuments(ctx, bson.M{"email": User.Email})
+	if exists > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email exists already"})
 		return
 	}
-
 	//hash passord
+	hash := hashPassword(*User.Password)
+	User.Password = &hash
 	//save user
 	_, err = UserCollection.InsertOne(ctx, User)
 	if err != nil {
@@ -65,8 +66,12 @@ func Register(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
-	//create token(with id, and username)
+	//userId := User.ID.Hex()
+	//create token(with id)
 	//attach cookies to user(use jwt to use te tokem to be stored in cookies)
+	//i am not storing token
+	// tokens.GenerateToken(*User.Email, *User.UserName, userId)
+
 	//send verification token to user's email
 	c.JSON(http.StatusCreated, gin.H{"msg": "Successful..."})
 }
