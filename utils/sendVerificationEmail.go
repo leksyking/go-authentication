@@ -1,13 +1,13 @@
 package utils
 
-import "net/smtp"
+// import "net/smtp"
 
-func PlainAuth() smtp.Auth {
-	auth := smtp.PlainAuth()
-	return auth
-}
+// func PlainAuth() smtp.Auth {
+// 	auth := smtp.PlainAuth()
+// 	return auth
+// }
 
-func SendEmail() error {
-	err := smtp.SendMail()
-	return err
-}
+// func SendEmail() error {
+// 	err := smtp.SendMail()
+// 	return err
+// }

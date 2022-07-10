@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/Valgard/godotenv v0.0.0-20200511222744-8873b92a09c5 // indirect
 	github.com/gin-contrib/sessions v0.0.5 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

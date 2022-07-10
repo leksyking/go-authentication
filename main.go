@@ -18,10 +18,10 @@ func main() {
 	server.Use(gin.Logger(), gin.Recovery())
 
 	//routes
+	routes.AuthRouter(server)
 	server.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, "Welcome to Go Authentication")
 	})
-	routes.AuthRouter(server)
 
 	port := os.Getenv("PORT")
 	if port == "" {
