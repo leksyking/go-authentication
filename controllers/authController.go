@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base32"
 	"fmt"
 	"log"
 	"net/http"
@@ -78,7 +80,22 @@ func Register(c *gin.Context) {
 	accessToken, refreshToken, _ := utils.GenerateToken(*User.Email, *User.UserName, userId)
 	utils.AttachCookiesToResponse(accessToken, refreshToken, c)
 	//send verification token to user's email
-	c.JSON(http.StatusCreated, gin.H{"msg": "Successful..."})
+	randomBytes := make([]byte, 50)
+	_, err = rand.Read(randomBytes)
+	if err != nil {
+		panic(err)
+	}
+	verificationToken := base32.StdEncoding.EncodeToString(randomBytes)[:40]
+	fmt.Println(verificationToken)
+	origin := "http://localhost:8080/api/v1"
+	email := []string{*User.Email}
+	err = utils.SendVerificationEmail(origin, verificationToken, email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println(err)
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"msg": "Successful..., check your mail to verify your account"})
 }
 
 func Login(c *gin.Context) {
