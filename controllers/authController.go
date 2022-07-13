@@ -67,6 +67,14 @@ func Register(c *gin.Context) {
 	//hash passord
 	hash := hashPassword(*User.Password)
 	User.Password = &hash
+	//generate verification token
+	randomBytes := make([]byte, 50)
+	_, err = rand.Read(randomBytes)
+	if err != nil {
+		panic(err)
+	}
+	verificationToken := base32.StdEncoding.EncodeToString(randomBytes)[:40]
+	User.VerificationToken = &verificationToken
 	//save user
 	_, err = UserCollection.InsertOne(ctx, User)
 	if err != nil {
@@ -80,13 +88,7 @@ func Register(c *gin.Context) {
 	accessToken, refreshToken, _ := utils.GenerateToken(*User.Email, *User.UserName, userId)
 	utils.AttachCookiesToResponse(accessToken, refreshToken, c)
 	//send verification token to user's email
-	randomBytes := make([]byte, 50)
-	_, err = rand.Read(randomBytes)
-	if err != nil {
-		panic(err)
-	}
-	verificationToken := base32.StdEncoding.EncodeToString(randomBytes)[:40]
-	fmt.Println(verificationToken)
+
 	origin := "http://localhost:8080/api/v1"
 	email := []string{*User.Email}
 	err = utils.SendVerificationEmail(origin, verificationToken, email)

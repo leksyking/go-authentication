@@ -3,17 +3,18 @@ package utils
 import (
 	"fmt"
 	"net/smtp"
+	"os"
 )
 
 var (
-	username = "gbemilekeogundipe07@gmail.com"
-	password = "tejkzeymgbcdpfak"
-	host     = "smtp.gmail.com"
+	username = os.Getenv("SMTP_USERNAME")
+	password = os.Getenv("SMTP_PASSWORD")
+	host     = os.Getenv("SMTP_HOST")
 )
 
 func PlainAuth() smtp.Auth {
 	fmt.Println(username)
-	auth := smtp.PlainAuth("", username, password, host)
+	auth := smtp.PlainAuth("GO-AUTH-LEKSYBABA", username, password, host)
 	return auth
 }
 
