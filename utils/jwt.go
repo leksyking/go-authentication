@@ -50,6 +50,7 @@ func GenerateToken(email, username, id string) (string, string, error) {
 }
 
 //validate token
+
 func AttachCookiesToResponse(accessToken, refreshToken string, c *gin.Context) {
 	env := os.Getenv("APP_ENV")
 	if env == "" {
