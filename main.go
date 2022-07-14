@@ -19,6 +19,7 @@ func main() {
 
 	//routes
 	routes.AuthRouter(server)
+	routes.UserRouter(server)
 	server.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, "Welcome to Go Authentication")
 	})
