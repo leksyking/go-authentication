@@ -36,26 +36,26 @@ func GenerateToken(email, username, id string) (string, string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Local().Add(time.Hour * time.Duration(720)).Local()),
 		},
 	}
-	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(SECRET_KEY))
+	accessTokenJWT, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(SECRET_KEY))
 	if err != nil {
 		log.Panic(err)
 		return "", "", err
 	}
-	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SECRET_KEY))
+	refreshTokenJWT, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SECRET_KEY))
 	if err != nil {
 		log.Panic(err)
 		return "", "", err
 	}
-	return accessToken, refreshToken, nil
+	return accessTokenJWT, refreshTokenJWT, nil
 }
 
 //validate token
 
-func AttachCookiesToResponse(accessToken, refreshToken string, c *gin.Context) {
+func AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT string, c *gin.Context) {
 	env := os.Getenv("APP_ENV")
 	if env == "" {
 		env = "development"
 	}
-	c.SetCookie("accessCookie", accessToken, 60*60*24, "/", "localhost", env == "development", true)
-	c.SetCookie("refreshCookie", refreshToken, 60*60*24*30, "/", "localhost", env == "development", true)
+	c.SetCookie("accessCookie", accessTokenJWT, 60*60*24, "/", "localhost", env == "development", true)
+	c.SetCookie("refreshCookie", refreshTokenJWT, 60*60*24*30, "/", "localhost", env == "development", true)
 }

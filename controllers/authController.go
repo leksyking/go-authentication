@@ -92,8 +92,8 @@ func Register(c *gin.Context) {
 	}
 	userId := User.ID.Hex()
 	//attach cookies to user(use jwt to create the tokens to be stored in cookies)
-	accessToken, refreshToken, _ := utils.GenerateToken(*User.Email, *User.UserName, userId)
-	utils.AttachCookiesToResponse(accessToken, refreshToken, c)
+	accessTokenJWT, refreshTokenJWT, _ := utils.GenerateToken(*User.Email, *User.UserName, userId)
+	utils.AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT, c)
 	//send verification token to user's email
 	origin := "http://localhost:8080/api/v1"
 	email := []string{*User.Email}
@@ -135,8 +135,8 @@ func Login(c *gin.Context) {
 	}
 	//attach cookies
 	userId := foundUser.ID.Hex()
-	accessToken, refreshToken, _ := utils.GenerateToken(*foundUser.Email, *foundUser.UserName, userId)
-	utils.AttachCookiesToResponse(accessToken, refreshToken, c)
+	accessTokenJWT, refreshTokenJWT, _ := utils.GenerateToken(*foundUser.Email, *foundUser.UserName, userId)
+	utils.AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT, c)
 	c.JSON(http.StatusOK, gin.H{"msg": "Login Users"})
 }
 func Logout(c *gin.Context) {
