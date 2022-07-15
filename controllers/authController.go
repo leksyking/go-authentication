@@ -106,13 +106,6 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"msg": "Successful..., check your mail to verify your account"})
 }
 
-//verifyemail
-//check for the token and change status
-//forgotPassword
-//get the email
-//send forgotPassword link
-//resetPassword
-//change the password
 func Login(c *gin.Context) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
@@ -133,7 +126,6 @@ func Login(c *gin.Context) {
 	if !valid {
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 	}
-	//attach cookies
 	userId := foundUser.ID.Hex()
 	accessTokenJWT, refreshTokenJWT, _ := utils.GenerateToken(*foundUser.Email, *foundUser.UserName, userId)
 	utils.AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT, c)

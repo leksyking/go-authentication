@@ -13,7 +13,6 @@ var (
 )
 
 func PlainAuth() smtp.Auth {
-	fmt.Println(username)
 	auth := smtp.PlainAuth("GO-AUTH-LEKSYBABA", username, password, host)
 	return auth
 }

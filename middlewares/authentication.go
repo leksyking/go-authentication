@@ -7,7 +7,7 @@ import (
 )
 
 func Authentication(c *gin.Context) {
-	cookies, _ := c.Cookie("accessCookie")
+	cookies := c.Writer.Header().Values("Set-Cookie")
 	fmt.Println(cookies)
 	// accessToken := cookies[0]
 	// refreshToken := cookies[1]
