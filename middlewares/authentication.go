@@ -1,14 +1,13 @@
 package middlewares
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 )
 
 func Authentication(c *gin.Context) {
-	cookies := c.Writer.Header().Values("Set-Cookie")
-	fmt.Println(cookies)
+	accessToken, err := c.Cookie("accessCookie")
+
+	refreshToken, err := c.Cookie("refreshCookie")
 	// accessToken := cookies[0]
 	// refreshToken := cookies[1]
 	//check for cookies

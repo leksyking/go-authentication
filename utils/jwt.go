@@ -52,9 +52,10 @@ func GenerateToken(email, username, id string) (string, string, error) {
 //validate token
 
 func AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT string, c *gin.Context) {
+	// secure is set to false if development is local
 	acookie := accessTokenJWT
-	c.SetCookie("accessCookie", acookie, 60*60*24, "/", "localhost", true, true)
+	c.SetCookie("accessCookie", acookie, 60*60*24, "/", "localhost", false, true)
 
 	rcookie := refreshTokenJWT
-	c.SetCookie("refreshCookie", rcookie, 60*60*24*30, "/", "localhost", true, true)
+	c.SetCookie("refreshCookie", rcookie, 60*60*24*30, "/", "localhost", false, true)
 }
