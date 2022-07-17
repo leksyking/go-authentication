@@ -1,19 +1,30 @@
 package middlewares
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/leksyking/go-authentication/utils"
 )
 
 func Authentication(c *gin.Context) {
 	accessToken, err := c.Cookie("accessCookie")
-
-	refreshToken, err := c.Cookie("refreshCookie")
-	// accessToken := cookies[0]
-	// refreshToken := cookies[1]
-	//check for cookies
-	//accesstoken first
-	//refreshtoken next
-	//verify the token inside  the cookies
+	if err != nil {
+		refreshToken, err := c.Cookie("refreshCookie")
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication failed."})
+		}
+		payload, msg := utils.ValidateToken(refreshToken)
+		if msg != "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		}
+	}
+	payload, msg := utils.ValidateToken(accessToken)
+	if msg != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+	}
+	//c.Request.Response = payload
+	c.Next()
 	//store the payloads in user
 	//next
 }

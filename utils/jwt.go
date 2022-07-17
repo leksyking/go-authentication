@@ -50,6 +50,21 @@ func GenerateToken(email, username, id string) (string, string, error) {
 }
 
 //validate token
+func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
+	token, err := jwt.ParseWithClaims(signedToken, &SignedDetails{}, func(signedToken *jwt.Token) (interface{}, error) {
+		return []byte(SECRET_KEY), nil
+	})
+	if err != nil {
+		msg = err.Error()
+		return nil, msg
+	}
+	claims, ok := token.Claims.(*SignedDetails)
+	if !ok {
+		msg = "Token is invalid"
+		return nil, msg
+	}
+	return claims, ""
+}
 
 func AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT string, c *gin.Context) {
 	// secure is set to false if development is local
