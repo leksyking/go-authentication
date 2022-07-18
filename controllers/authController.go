@@ -90,10 +90,6 @@ func Register(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
-	userId := User.ID.Hex()
-	//attach cookies to user(use jwt to create the tokens to be stored in cookies)
-	accessTokenJWT, refreshTokenJWT, _ := utils.GenerateToken(*User.Email, *User.UserName, userId)
-	utils.AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT, c)
 	//send verification token to user's email
 	origin := "http://localhost:8080/api/v1"
 	email := []string{*User.Email}
@@ -107,6 +103,39 @@ func Register(c *gin.Context) {
 }
 
 //verify token
+func VerifyEmail(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	var user models.User
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println(err)
+		return
+	}
+	var foundUser models.User
+	err := UserCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println(err)
+		return
+	}
+	if foundUser.VerificationToken != user.VerificationToken {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		fmt.Println("Invalid token")
+		return
+	}
+	//update user database
+	time, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	_, err = UserCollection.UpdateOne(ctx, bson.D{primitive.E{Key: "_id", Value: foundUser.ID}},
+		bson.M{"verification_token": "", "is_verified": true, "verified": time})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "Email verified"})
+}
+
 func Login(c *gin.Context) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
@@ -130,11 +159,10 @@ func Login(c *gin.Context) {
 	userId := foundUser.ID.Hex()
 	accessTokenJWT, refreshTokenJWT, _ := utils.GenerateToken(*foundUser.Email, *foundUser.UserName, userId)
 	utils.AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT, c)
-	c.JSON(http.StatusOK, gin.H{"msg": "Login Users"})
+	c.JSON(http.StatusOK, gin.H{"msg": "Login Successful"})
 }
+
 func Logout(c *gin.Context) {
-	maxAge := time.Now().Unix()
-	fmt.Print(maxAge)
 	c.SetCookie("accessCookie", "logout", 0, "/", "localhost", false, true)
 	c.SetCookie("refreshCookie", "logout", 0, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{"msg": "You are logged out"})

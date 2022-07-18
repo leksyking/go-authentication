@@ -1,6 +1,10 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type User struct {
 	ID                primitive.ObjectID `bson:"_id"`
@@ -10,4 +14,6 @@ type User struct {
 	UserName          *string            `json:"username" validate:"required"`
 	Password          *string            `json:"password" validate:"required"`
 	VerificationToken *string            `json:"verification_token"`
+	IsVerified        *bool              `json:"is_verified"`
+	Verified          time.Time          `json:"verified"`
 }
