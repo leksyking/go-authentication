@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,13 +19,18 @@ func Authentication(c *gin.Context) {
 		if msg != "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 		}
+		//attach cookies again and assign payload
+		c.Set("user", payload)
+		c.Next()
 	}
+	// c.Set("user",) & c.get("user")   uid := user.(*model.User).UID
 	payload, msg := utils.ValidateToken(accessToken)
 	if msg != "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 	}
+	fmt.Println(payload)
+	c.Set("user", payload)
+	//store the payloads in user
 	//c.Request.Response = payload
 	c.Next()
-	//store the payloads in user
-	//next
 }
