@@ -106,6 +106,7 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"msg": "Successful..., check your mail to verify your account"})
 }
 
+//verify token
 func Login(c *gin.Context) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
@@ -132,5 +133,9 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "Login Users"})
 }
 func Logout(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"msg": "Logout Users"})
+	maxAge := time.Now().Unix()
+	fmt.Print(maxAge)
+	c.SetCookie("accessCookie", "logout", 0, "/", "localhost", false, true)
+	c.SetCookie("refreshCookie", "logout", 0, "/", "localhost", false, true)
+	c.JSON(http.StatusOK, gin.H{"msg": "You are logged out"})
 }

@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/leksyking/go-authentication/controllers"
+	"github.com/leksyking/go-authentication/middlewares"
 )
 
 func AuthRouter(route *gin.Engine) {
@@ -10,6 +11,6 @@ func AuthRouter(route *gin.Engine) {
 	{
 		authRoute.POST("/register", controllers.Register)
 		authRoute.POST("/login", controllers.Login)
-		authRoute.POST("/logout", controllers.Logout)
+		authRoute.POST("/logout", middlewares.Authentication, controllers.Logout)
 	}
 }

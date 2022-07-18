@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,8 +12,6 @@ func ShowUser(c *gin.Context) {
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication failed."})
 	}
-	Uid := payload.(*utils.SignedDetails).Uid
 	Username := payload.(*utils.SignedDetails).UserName
-	details := fmt.Sprintf("%s,\n %s", Uid, Username)
-	c.JSON(http.StatusOK, gin.H{"user": details})
+	c.JSON(http.StatusOK, gin.H{"user": Username})
 }
