@@ -37,3 +37,7 @@ func UserCollection(client *mongo.Client) *mongo.Collection {
 	var collection *mongo.Collection = client.Database("goauthDB").Collection("User")
 	return collection
 }
+func TokenCollection(client *mongo.Client) *mongo.Collection {
+	var collection *mongo.Collection = client.Database("goauthDB").Collection("Token")
+	return collection
+}

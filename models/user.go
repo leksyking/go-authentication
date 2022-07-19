@@ -17,3 +17,12 @@ type User struct {
 	IsVerified        *bool              `json:"is_verified"`
 	Verified          time.Time          `json:"verified"`
 }
+
+type Token struct {
+	TokenID      primitive.ObjectID `bson:"_id"`
+	RefreshToken *string            `json:"refreshtoken"`
+	IP           *string            `json:"ip"`
+	IsValid      *bool              `json:"is_valid"`
+	UserAgent    *string            `json:"useragent"`
+	User         primitive.ObjectID `json:"user_id"`
+}

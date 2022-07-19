@@ -20,9 +20,10 @@ import (
 )
 
 var (
-	validate                         = validator.New()
-	Client         *mongo.Client     = models.Client
-	UserCollection *mongo.Collection = models.UserCollection(Client)
+	validate                          = validator.New()
+	Client          *mongo.Client     = models.Client
+	UserCollection  *mongo.Collection = models.UserCollection(Client)
+	TokenCollection *mongo.Collection = models.TokenCollection(Client)
 )
 
 func hashPassword(userPassword string) string {
@@ -124,7 +125,6 @@ func VerifyEmail(c *gin.Context) {
 		fmt.Println("Invalid token")
 		return
 	}
-	//update user database
 	time, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	_, err = UserCollection.UpdateOne(ctx, bson.D{primitive.E{Key: "_id", Value: foundUser.ID}},
 		bson.M{"verification_token": "", "is_verified": true, "verified": time})
@@ -157,6 +157,9 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 	}
 	userId := foundUser.ID.Hex()
+
+	//check for user in the token collection
+
 	accessTokenJWT, refreshTokenJWT, _ := utils.GenerateToken(*foundUser.Email, *foundUser.UserName, userId)
 	utils.AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT, c)
 	c.JSON(http.StatusOK, gin.H{"msg": "Login Successful"})
