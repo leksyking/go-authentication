@@ -120,14 +120,14 @@ func VerifyEmail(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
-	if foundUser.VerificationToken != user.VerificationToken {
+	if *foundUser.VerificationToken != *user.VerificationToken {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		fmt.Println("Invalid token")
 		return
 	}
 	time, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	_, err = UserCollection.UpdateOne(ctx, bson.D{primitive.E{Key: "_id", Value: foundUser.ID}},
-		bson.M{"verification_token": "", "is_verified": true, "verified": time})
+		bson.D{{Key: "$set", Value: bson.M{"verification_token": "", "is_verified": true, "verified": time}}})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		fmt.Println(err)
@@ -166,12 +166,13 @@ func Login(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	token, err := TokenCollection.CountDocuments(ctx, bson.M{"user_id": foundUser.ID})
+	token, err := TokenCollection.CountDocuments(ctx, bson.D{primitive.E{Key: "user_id", Value: foundUser.ID}})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		fmt.Println(err)
 		return
 	}
+	fmt.Println(token)
 	if token > 0 {
 		var tokenUser models.Token
 		if err := TokenCollection.FindOne(ctx, bson.M{"user_id": foundUser.ID}).Decode(&tokenUser); err != nil {
@@ -196,7 +197,13 @@ func Login(c *gin.Context) {
 	userToken.RefreshToken = &refreshToken
 	userToken.UserAgent = &userAgent
 	userToken.IP = &ip
-
+	userToken.IsValid = true
+	userToken.User = foundUser.ID
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	_, err = TokenCollection.InsertOne(ctx, userToken)
 	if err != nil {
 		fmt.Println(err)

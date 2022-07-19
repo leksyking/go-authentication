@@ -13,16 +13,16 @@ type User struct {
 	Email             *string            `json:"email" validate:"required,email"`
 	UserName          *string            `json:"username" validate:"required"`
 	Password          *string            `json:"password" validate:"required"`
-	VerificationToken *string            `json:"verification_token"`
-	IsVerified        *bool              `json:"is_verified"`
-	Verified          time.Time          `json:"verified"`
+	VerificationToken *string            `json:"verification_token" bson:"verification_token"`
+	IsVerified        *bool              `json:"is_verified" bson:"is_verified"`
+	Verified          time.Time          `json:"verified" bson:"verified"`
 }
 
 type Token struct {
 	TokenID      primitive.ObjectID `bson:"_id"`
-	RefreshToken *string            `json:"refreshtoken"`
-	IP           *string            `json:"ip"`
-	IsValid      bool               `json:"is_valid"` //set default to true
-	UserAgent    *string            `json:"useragent"`
-	User         primitive.ObjectID `json:"user_id"`
+	RefreshToken *string            `json:"refreshtoken" bson:"refreshtoken"`
+	IP           *string            `json:"ip" bson:"ip"`
+	IsValid      bool               `json:"is_valid" bson:"is_valid"`
+	UserAgent    *string            `json:"useragent" bson:"useragent"`
+	User         primitive.ObjectID `json:"user_id" bson:"user_id"`
 }
