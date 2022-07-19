@@ -155,6 +155,7 @@ func Login(c *gin.Context) {
 	valid, msg := verifyPassword(*foundUser.Password, *user.Password)
 	if !valid {
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
 	}
 	userId := foundUser.ID.Hex()
 
@@ -165,11 +166,16 @@ func Login(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	token := TokenCollection.FindOne(ctx, bson.M{"user_id": foundUser.ID})
-	if token != nil {
+	token, err := TokenCollection.CountDocuments(ctx, bson.M{"user_id": foundUser.ID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println(err)
+		return
+	}
+	if token > 0 {
 		var tokenUser models.Token
-		if err := token.Decode(&tokenUser); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Can't decode token"})
+		if err := TokenCollection.FindOne(ctx, bson.M{"user_id": foundUser.ID}).Decode(&tokenUser); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Can't decode token."})
 			return
 		}
 		if !tokenUser.IsValid {
@@ -184,13 +190,16 @@ func Login(c *gin.Context) {
 	}
 	var userToken models.Token
 	refreshToken = base32.StdEncoding.EncodeToString(randomBytes)[:40]
-	userAgent := c.Request.Header["user-agent"]
+	userAgent := c.Request.Header["User-Agent"][0]
 	ip := c.ClientIP()
+	userToken.TokenID = primitive.NewObjectID()
 	userToken.RefreshToken = &refreshToken
-	userToken.UserAgent = &userAgent[1]
+	userToken.UserAgent = &userAgent
 	userToken.IP = &ip
+
 	_, err = TokenCollection.InsertOne(ctx, userToken)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while saving token."})
 		return
 	}

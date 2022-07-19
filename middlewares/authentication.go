@@ -41,6 +41,10 @@ func Authentication(c *gin.Context) {
 		}
 		refresht_Token := payload.RefreshToken
 		err = TokenCollection.FindOne(ctx, bson.M{"user_id": usertId, "refreshtoken": refresht_Token}).Decode(&token)
+		if !token.IsValid {
+			fmt.Println("Authentication failed.")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authentication failed"})
+		}
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Oops!, Something went wrong."})
