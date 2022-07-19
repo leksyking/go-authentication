@@ -159,13 +159,61 @@ func Login(c *gin.Context) {
 	userId := foundUser.ID.Hex()
 
 	//check for user in the token collection
-
-	accessTokenJWT, refreshTokenJWT, _ := utils.GenerateToken(*foundUser.Email, *foundUser.UserName, userId)
+	refreshToken := ""
+	randomBytes := make([]byte, 50)
+	_, err = rand.Read(randomBytes)
+	if err != nil {
+		panic(err)
+	}
+	token := TokenCollection.FindOne(ctx, bson.M{"user_id": foundUser.ID})
+	if token != nil {
+		var tokenUser models.Token
+		if err := token.Decode(&tokenUser); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Can't decode token"})
+			return
+		}
+		if !tokenUser.IsValid {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid details"})
+			return
+		}
+		refreshToken = *tokenUser.RefreshToken
+		accessTokenJWT, refreshTokenJWT, _ := utils.GenerateToken(*foundUser.Email, *foundUser.UserName, refreshToken, userId)
+		utils.AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT, c)
+		c.JSON(http.StatusOK, gin.H{"msg": "Login Successful"})
+		return
+	}
+	var userToken models.Token
+	refreshToken = base32.StdEncoding.EncodeToString(randomBytes)[:40]
+	userAgent := c.Request.Header["user-agent"]
+	ip := c.ClientIP()
+	userToken.RefreshToken = &refreshToken
+	userToken.UserAgent = &userAgent[1]
+	userToken.IP = &ip
+	_, err = TokenCollection.InsertOne(ctx, userToken)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while saving token."})
+		return
+	}
+	accessTokenJWT, refreshTokenJWT, _ := utils.GenerateToken(*foundUser.Email, *foundUser.UserName, refreshToken, userId)
 	utils.AttachCookiesToResponse(accessTokenJWT, refreshTokenJWT, c)
 	c.JSON(http.StatusOK, gin.H{"msg": "Login Successful"})
 }
 
 func Logout(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication failed."})
+	}
+	userId := user.(*utils.SignedDetails).ID
+	usertId, _ := primitive.ObjectIDFromHex(userId)
+	_, err := TokenCollection.DeleteOne(ctx, bson.M{"user_id": usertId})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong, try again later."})
+		fmt.Println(err)
+		return
+	}
 	c.SetCookie("accessCookie", "logout", 0, "/", "localhost", false, true)
 	c.SetCookie("refreshCookie", "logout", 0, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{"msg": "You are logged out"})

@@ -22,7 +22,7 @@ type Token struct {
 	TokenID      primitive.ObjectID `bson:"_id"`
 	RefreshToken *string            `json:"refreshtoken"`
 	IP           *string            `json:"ip"`
-	IsValid      *bool              `json:"is_valid"`
+	IsValid      bool               `json:"is_valid"` //set default to true
 	UserAgent    *string            `json:"useragent"`
 	User         primitive.ObjectID `json:"user_id"`
 }
