@@ -149,12 +149,18 @@ func Login(c *gin.Context) {
 	var foundUser models.User
 	err := UserCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email"})
 		return
 	}
 	valid, msg := verifyPassword(*foundUser.Password, *user.Password)
 	if !valid {
-		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": msg})
+		return
+	}
+	//check whether user is verified
+	if !*foundUser.IsVerified {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid verification"})
+		fmt.Println("invalid verification")
 		return
 	}
 	userId := foundUser.ID.Hex()
@@ -221,6 +227,7 @@ func Logout(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication failed."})
+		return
 	}
 	userId := user.(*utils.SignedDetails).ID
 	usertId, _ := primitive.ObjectIDFromHex(userId)
