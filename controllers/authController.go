@@ -96,13 +96,10 @@ func Register(c *gin.Context) {
 	//send verification token to user's email
 	origin := "http://localhost:8080/api/v1"
 	email := []string{*User.Email}
-	err = utils.SendVerificationEmail(origin, verificationToken, email)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		fmt.Println(err)
-		return
-	}
+	wg.Add(1)
+	go utils.SendVerificationEmail(origin, verificationToken, email, c)
 	c.JSON(http.StatusCreated, gin.H{"msg": "Successful..., check your mail to verify your account"})
+	wg.Wait()
 }
 
 //verify token

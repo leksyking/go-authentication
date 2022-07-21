@@ -2,8 +2,11 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 	"net/smtp"
 	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -17,7 +20,7 @@ func PlainAuth() smtp.Auth {
 	return auth
 }
 
-func SendVerificationEmail(origin, verificationToken string, email []string) error {
+func SendVerificationEmail(origin, verificationToken string, email []string, c *gin.Context) {
 	a := PlainAuth()
 	addr := host + ":587"
 	verifyEmail := fmt.Sprintf("%s/auth/verify-email?token=%s&email=%s", origin, verificationToken, email)
@@ -29,5 +32,9 @@ func SendVerificationEmail(origin, verificationToken string, email []string) err
 		subject + ".\r\n")
 
 	err := smtp.SendMail(addr, a, "Leksyking", email, message)
-	return err
+	if err != nil {
+		fmt.Println(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong, try again later..."})
+	}
+	wg.Done()
 }
