@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,7 @@ import (
 )
 
 var (
+	wg              *sync.WaitGroup
 	validate                          = validator.New()
 	Client          *mongo.Client     = models.Client
 	UserCollection  *mongo.Collection = models.UserCollection(Client)
@@ -260,7 +262,32 @@ func ForgotPassword(c *gin.Context) {
 		return
 	}
 	//send resetpassword mail
+	//generate rand bytes
+	randomBytes := make([]byte, 50)
+	_, err = rand.Read(randomBytes)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong..."})
+		panic(err)
+	}
+	origin := "http://localhost:8080/api/v1"
+	passwordToken := base32.StdEncoding.EncodeToString(randomBytes)[:40]
+	email := []string{*user.Email}
+	//add a goroutine
+	wg.Add(1)
+	go utils.SendResetPasswordEmail(origin, passwordToken, email, c)
 
+	passwordTokenExpirationDate := time.Now().Add(time.Duration(10 * time.Minute)).Local().Unix()
+	//update user
+	//hash password token
+	update := bson.M{"$set": bson.M{"passwordtoken": passwordToken, "passwordtokenexpirationdate": passwordTokenExpirationDate}}
+	_, err = UserCollection.UpdateOne(ctx, bson.M{"email": user.Email}, update)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		fmt.Println(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "Check your email for the password reset link."})
+	wg.Wait()
 }
 
 func ResetPassword(c *gin.Context) {
