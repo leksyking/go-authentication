@@ -241,3 +241,28 @@ func Logout(c *gin.Context) {
 	c.SetCookie("refreshCookie", "logout", 0, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{"msg": "You are logged out"})
 }
+
+func ForgotPassword(c *gin.Context) {
+	//get email
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	var user models.User
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong, try again later."})
+		fmt.Println(err)
+		return
+	}
+	//verify whether email is valid in the db
+	err := UserCollection.FindOne(ctx, bson.M{"email": user.Email}).Err()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User does not exist"})
+		fmt.Println(err)
+		return
+	}
+	//send resetpassword mail
+
+}
+
+func ResetPassword(c *gin.Context) {
+
+}

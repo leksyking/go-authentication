@@ -13,5 +13,7 @@ func AuthRouter(route *gin.Engine) {
 		authRoute.POST("/login", controllers.Login)
 		authRoute.POST("/verify-email", controllers.VerifyEmail)
 		authRoute.POST("/logout", middlewares.Authentication, controllers.Logout)
+		authRoute.POST("/forgot-password", controllers.ForgotPassword)
+		authRoute.POST("/reset-password", controllers.ResetPassword)
 	}
 }
