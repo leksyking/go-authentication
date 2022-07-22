@@ -288,5 +288,38 @@ func ForgotPassword(c *gin.Context) {
 }
 
 func ResetPassword(c *gin.Context) {
-
+	//check for email, password token password
+	//hash password
+	//set password in the db
+	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	var user models.User
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println(err)
+		return
+	}
+	var foundUser models.User
+	if err := UserCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
+		fmt.Println(err)
+		return
+	}
+	//get current time
+	currentTime := time.Now().Local().Unix()
+	if foundUser.PasswordToken == user.PasswordToken && foundUser.PasswordTokenExpirationDate > currentTime {
+		//update the database
+		//hash password token
+		password := hashPassword(*user.Password)
+		err := UserCollection.FindOneAndUpdate(ctx, bson.M{"email": user.Email}, bson.M{"$set": bson.M{"password": password, "passwordtoken": nil, "passwordtokenexpirationdate": nil}}).Err()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
+			fmt.Println(err)
+			return
+		}
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Token"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "Password reset is successful!"})
 }
