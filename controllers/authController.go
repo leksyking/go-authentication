@@ -14,6 +14,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/leksyking/go-authentication/models"
 	"github.com/leksyking/go-authentication/utils"
+	"github.com/shomali11/util/xhashes"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -276,7 +277,8 @@ func ForgotPassword(c *gin.Context) {
 	passwordTokenExpirationDate := time.Now().Add(time.Duration(10 * time.Minute)).Local().Unix()
 	//update user
 	//hash password token
-	update := bson.M{"$set": bson.M{"passwordtoken": passwordToken, "passwordtokenexpirationdate": passwordTokenExpirationDate}}
+	hashedPasswordToken := xhashes.MD5(passwordToken)
+	update := bson.M{"$set": bson.M{"passwordtoken": hashedPasswordToken, "passwordtokenexpirationdate": passwordTokenExpirationDate}}
 	_, err = UserCollection.UpdateOne(ctx, bson.M{"email": user.Email}, update)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -307,7 +309,7 @@ func ResetPassword(c *gin.Context) {
 	}
 	//get current time
 	currentTime := time.Now().Local().Unix()
-	if foundUser.PasswordToken == user.PasswordToken && foundUser.PasswordTokenExpirationDate > currentTime {
+	if foundUser.PasswordToken == xhashes.MD5(user.PasswordToken) && foundUser.PasswordTokenExpirationDate > currentTime {
 		//update the database
 		//hash password token
 		password := hashPassword(*user.Password)

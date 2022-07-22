@@ -24,7 +24,7 @@ func SendVerificationEmail(origin, verificationToken string, email []string, c *
 	a := PlainAuth()
 	addr := host + ":587"
 	verifyEmail := fmt.Sprintf("%s/auth/verify-email?token=%s&email=%s", origin, verificationToken, email)
-	subject := fmt.Sprintf("<p>Please confirm your email by clicking this link: <a href=%s>Verify Email</a></p>", verifyEmail)
+	subject := fmt.Sprintf("Please confirm your email by clicking this link: %s", verifyEmail)
 
 	message := []byte("To: " + email[0] + "\r\n" +
 		"Subject: Welcome to Go website!\r\n" +

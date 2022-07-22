@@ -15,7 +15,7 @@ func SendResetPasswordEmail(origin, passwordToken string, email []string, c *gin
 	a := PlainAuth()
 	addr := host + ":587"
 	resetPassword := fmt.Sprintf("%s/auth/reset-password?email=%s&token=%s", origin, email, passwordToken)
-	subject := fmt.Sprintf("<p>Please reset your passsword by clicking on this link <a href=%s>Reset Password</a></p>", resetPassword)
+	subject := fmt.Sprintf("Please reset your passsword by clicking on this link: %s", resetPassword)
 
 	message := []byte("To: " + email[0] + "\r\n" +
 		"Subject: Forgot Password!\r\n" +
