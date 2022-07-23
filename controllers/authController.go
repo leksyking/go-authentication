@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/leksyking/go-authentication/models"
 	"github.com/leksyking/go-authentication/utils"
+	"github.com/leksyking/go-authentication/wait"
 	"github.com/shomali11/util/xhashes"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	wg              *sync.WaitGroup
+	wg                                = wait.Wg
 	validate                          = validator.New()
 	Client          *mongo.Client     = models.Client
 	UserCollection  *mongo.Collection = models.UserCollection(Client)
@@ -290,9 +290,6 @@ func ForgotPassword(c *gin.Context) {
 }
 
 func ResetPassword(c *gin.Context) {
-	//check for email, password token password
-	//hash password
-	//set password in the db
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	var user models.User
